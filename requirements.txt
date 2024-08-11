@@ -2,3 +2,4 @@ fastapi==0.97.0
 uvicorn==0.22.0
 psycopg2-binary==2.9.9
 SQLAlchemy==2.0.32
+tsidpy==1.1.5

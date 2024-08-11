@@ -1,3 +1,4 @@
+from datetime import date
 from sqlalchemy import (
     BigInteger,
     Boolean,
@@ -26,6 +27,21 @@ class Url(Base):
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+    @classmethod
+    def create(
+        cls,
+        id: int,
+        original_url: str,
+        short_key: str,
+        expiration_date: date | None = None,
+    ) -> "Url":
+        return cls(
+            id=id,
+            original_url=original_url,
+            short_key=short_key,
+            expiration_date=expiration_date,
+        )
 
 
 class UrlStats(Base):
