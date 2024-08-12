@@ -25,8 +25,13 @@ URL 단축 서비스는 긴 URL을 짧게 단축하여 사용하고, 단축된 U
 - timezone=True ( created_at 필드 )
     - 전 세계 사용자들에게 서비스를 제공할 계획이 있는 경우 전역 시간 표준화 하는 것이 관리 용이
 
+- 만료일 지났을 때 삭제 처리 방법
+    - 설정한 만료일이 지난 key를 조회 시 is_active 필드를 false로 업데이트함으로써 soft-delete 처리
+    - 통계 데이터는 연속성이 중요하다고 판단. 고객 이탈 분석 등 활용가치가 있을 수 있음
+
 
 #### 실행 방법
+🟦 아래 과정은 윈도우, 맥 둘다 정상 작동 확인 완료
 
 1. repository를 다운받고 해당 위치로 이동 후 vscode열기
 
@@ -57,8 +62,63 @@ pip install -r requirements-dev.txt
 ```
 docker-compose -f docker-compose.dev.yml up -d --build
 ```
-❗️❗️ 테이블을 자동으로 생성해 주지 않습니다. db에 접속해서 CREATE TABLE ... 명령어로 정의된 모델에 대한 테이블을 직접 생성해야 합니다.<br>
+❗️❗️ 현재 테이블을 자동으로 생성해 주지 않습니다. db에 접속해서 CREATE TABLE ... 명령어로 정의된 모델에 대한 테이블을 직접 생성해야 합니다.<br>
 ❗️❗️ 테이블을 생성해 주지 않고 진행시 500에러
+
+<br>
+
+✅테이블 생성 과정 설명 추가합니다. (설명대로 진행해도 되지만 db에 접속하여 아래 2개의 sql문을 바로 복사하여 실행해도 무방)
+
+```
+# 파이참 - 파이썬 콘솔 열기
+# vscode - "Jupyter: Create Interactive Window" 실행
+# 아래 명령어들을 차례로 입력
+
+from sqlalchemy.schema import CreateTable
+from database.orm import Url, UrlStats
+from database.connection import engine
+```
+
+```
+print(CreateTable(Url.__table__).compile(engine))
+```
+
+```
+print(CreateTable(UrlStats.__table__).compile(engine))
+```
+
+위 과정으로 아래 2개의 sql생성
+```
+CREATE TABLE url (
+	id BIGINT NOT NULL,
+	original_url VARCHAR NOT NULL,
+	short_key VARCHAR(256) NOT NULL,
+	expiration_date DATE,
+	is_active BOOLEAN NOT NULL,
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+	PRIMARY KEY (id)
+);
+```
+
+```
+CREATE TABLE url_stats (
+	id SERIAL NOT NULL,
+	date DATE NOT NULL,
+	access_count INTEGER NOT NULL,
+	url_id BIGINT NOT NULL,
+	PRIMARY KEY (id),
+	FOREIGN KEY(url_id) REFERENCES url (id)
+);
+```
+
+db 접속 후 psql 실행
+```
+docker exec -it url-shortening-db bash
+
+psql --username shortner --dbname shortner
+```
+
+위에서 생성된 2개의 sql문으로 테이블 생성 후 진행
 
 <br>
 
@@ -68,6 +128,8 @@ docker-compose -f docker-compose.dev.yml up -d --build
 uvicorn main:app --reload
 ```
 swagger 이동 : http://127.0.0.1:8000/docs
+
+![FastAPI-SwaggerUI](https://github.com/user-attachments/assets/e4e1e9e3-6d3c-43fb-bbf2-b701cfafe9cf)
 
 #### URL 단축 흐름도
 ❗️❗️ 상세한 로직은 코드를 참고해 주세요
