@@ -25,9 +25,55 @@ URL 단축 서비스는 긴 URL을 짧게 단축하여 사용하고, 단축된 U
 - timezone=True ( created_at 필드 )
     - 전 세계 사용자들에게 서비스를 제공할 계획이 있는 경우 전역 시간 표준화 하는 것이 관리 용이
 
+
+#### 실행 방법
+
+1. repository를 다운받고 해당 위치로 이동 후 vscode열기
+
+```
+git clone https://github.com/msm9401/url-shortening.git
+
+cd url-shortening
+
+code .
+```
+
+<br>
+
+2. 파이썬 가상환경 실행 후 requirements-dev.txt 설치
+
+```
+python -m venv venv
+
+source venv/bin/activate
+
+pip install -r requirements-dev.txt
+```
+
+<br>
+
+3. docker-compose.dev.yml에 정의된 db실행
+
+```
+docker-compose -f docker-compose.dev.yml up -d --build
+```
+❗️❗️ 테이블을 자동으로 생성해 주지 않습니다. db에 접속해서 CREATE TABLE ... 명령어로 정의된 모델에 대한 테이블을 직접 생성해야 합니다.<br>
+❗️❗️ 테이블을 생성해 주지 않고 진행시 500에러
+
+<br>
+
+4. uvicorn 실행 후 swagger이동
+
+```
+uvicorn main:app --reload
+```
+swagger 이동 : http://127.0.0.1:8000/docs
+
 #### URL 단축 흐름도
+❗️❗️ 상세한 로직은 코드를 참고해 주세요
 ![url-shortner-flow](https://github.com/user-attachments/assets/e50f0226-ac4f-49ac-b22e-570efa62c765)
 
 
 #### URL 리디렉션 흐름도
+❗️❗️ 상세한 로직은 코드를 참고해 주세요
 ![url-return](https://github.com/user-attachments/assets/c1bc211f-bec7-40d8-9fcb-3d5babcb10d4)
