@@ -48,10 +48,10 @@ def create_short_key_handler(
     url_service: UrlService = Depends(),
     url_repo: UrlRepository = Depends(),
 ):
-    original_url: Url | None = url_repo.get_key_by_original_url(
+    url: Url | None = url_repo.get_url_by_original_url(
         original_url=request.original_url
     )
-    if original_url:
+    if url:
         raise HTTPException(status_code=409, detail="This URL already exists.")
 
     tsid: int = url_service.tsid_generator()
