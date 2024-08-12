@@ -1,4 +1,5 @@
 import string
+from datetime import date
 
 from tsidpy import TSID
 
@@ -7,6 +8,19 @@ class UrlService:
     BASE62_ALPHABET: str = (
         string.digits + string.ascii_lowercase + string.ascii_uppercase
     )
+
+    def is_expired(self, expiration_date: date | None) -> bool:
+        """
+        url의 expiration_date 가 지났는지 확인
+
+        Returns:
+        - bool: 만료 True, 그렇지 않으면 False
+        """
+
+        if expiration_date is None:
+            return False
+
+        return date.today() > expiration_date
 
     def encode_by_base62(self, url_tsid: int) -> str:
         """

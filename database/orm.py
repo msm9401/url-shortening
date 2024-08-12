@@ -43,6 +43,10 @@ class Url(Base):
             expiration_date=expiration_date,
         )
 
+    def inactive(self) -> "Url":
+        self.is_active = False
+        return self
+
 
 class UrlStats(Base):
     __tablename__ = "url_stats"

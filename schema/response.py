@@ -1,15 +1,12 @@
+from datetime import date
 from pydantic import BaseModel
 
 
 class UrlSchema(BaseModel):
-    short_key: str
-
-    class Config:
-        orm_mode = True
-
-
-class RedirectUrlSchema(BaseModel):
     original_url: str
+    short_key: str
+    expiration_date: date | None
+    is_active: bool
 
     class Config:
         orm_mode = True

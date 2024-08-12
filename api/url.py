@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from database.orm import Url
 from database.repository import UrlRepository
 from schema.request import CreateShortUrlRequest
-from schema.response import RedirectUrlSchema, UrlSchema
+from schema.response import UrlSchema
 from service.url import UrlService
 
 
@@ -15,16 +15,30 @@ router = APIRouter()
 @router.get("/{short_key}", status_code=301)
 def get_original_url_handler(
     short_key: str,
+    url_service: UrlService = Depends(),
     url_repo: UrlRepository = Depends(),
 ):
-    original_url: Url | None = url_repo.get_original_url_by_short_key(
-        short_key=short_key
-    )
-    if not original_url:
+    url: Url | None = url_repo.get_url_by_short_key(short_key=short_key)
+
+    # 만료일과 active상태 검증
+    if url.expiration_date is not None and url.is_active is True:
+        is_expired: bool = url_service.is_expired(expiration_date=url.expiration_date)
+
+        if is_expired is True:  # 만료
+            url.inactive()  # soft delete
+            url: Url = url_repo.update_url(url=url)
+            raise HTTPException(status_code=404, detail="URL Not Found")
+
+    if not url or url.is_active is False:
         raise HTTPException(status_code=404, detail="URL Not Found")
 
-    return RedirectUrlSchema.from_orm(original_url)
-    # return RedirectResponse(url=original_url)
+    # return UrlSchema.from_orm(url)
+
+    # TODO: access_count + 1
+    # TODO: 빠른 응답을 위한 redis 캐시
+
+    # 응답 location 헤더에 반환
+    return RedirectResponse(url.original_url, status_code=301)
 
 
 @router.post("/shorten", status_code=201)
