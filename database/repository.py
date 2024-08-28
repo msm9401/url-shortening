@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database.connection import get_db
-from database.orm import Url
+from database.orm import Url, UrlStats
 
 
 class UrlRepository:
@@ -27,3 +27,25 @@ class UrlRepository:
         self.session.commit()  # db save
         self.session.refresh(instance=url)
         return url
+
+
+class UrlStatsRepository:
+    def __init__(self, session: Session = Depends(get_db)):
+        self.session = session
+
+    def get_today_url_stats(self, date: str, url_id: int) -> UrlStats | None:
+        return self.session.scalar(
+            select(UrlStats).where(UrlStats.date == date, UrlStats.url_id == url_id)
+        )
+
+    def save_url_stats(self, url_stats: UrlStats) -> UrlStats:
+        self.session.add(instance=url_stats)
+        self.session.commit()  # db save
+        self.session.refresh(instance=url_stats)
+        return url_stats
+
+    def update_url_stats(self, url_stats: UrlStats) -> UrlStats:
+        self.session.add(instance=url_stats)
+        self.session.commit()  # db save
+        self.session.refresh(instance=url_stats)
+        return url_stats

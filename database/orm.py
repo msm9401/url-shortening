@@ -55,3 +55,11 @@ class UrlStats(Base):
     date = Column(Date, nullable=False, index=True)
     access_count = Column(Integer, default=0, nullable=False)
     url_id = Column(BigInteger, ForeignKey("url.id"), nullable=False)
+
+    @classmethod
+    def create(cls, date: str, access_count: int, url_id: int) -> "UrlStats":
+        return cls(date=date, access_count=access_count, url_id=url_id)
+
+    def increase_access_count(self) -> "UrlStats":
+        self.access_count += 1
+        return self

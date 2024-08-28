@@ -2,8 +2,8 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 
-from database.orm import Url
-from database.repository import UrlRepository
+from database.orm import Url, UrlStats
+from database.repository import UrlRepository, UrlStatsRepository
 from schema.request import CreateShortUrlRequest
 from schema.response import UrlSchema
 from service.url import UrlService
@@ -17,6 +17,7 @@ def get_original_url_handler(
     short_key: str,
     url_service: UrlService = Depends(),
     url_repo: UrlRepository = Depends(),
+    url_stats_repo: UrlStatsRepository = Depends(),
 ):
     url: Url | None = url_repo.get_url_by_short_key(short_key=short_key)
 
@@ -32,9 +33,19 @@ def get_original_url_handler(
     if not url or url.is_active is False:
         raise HTTPException(status_code=404, detail="URL Not Found")
 
-    # return UrlSchema.from_orm(url)
+    url_stats: UrlStats | None = url_stats_repo.get_today_url_stats(
+        date=date.today(), url_id=url.id
+    )
 
-    # TODO: access_count + 1
+    if url_stats is None:
+        url_stats: UrlStats = UrlStats.create(
+            date=date.today(), access_count=1, url_id=url.id
+        )
+        url_stats: UrlStats = url_stats_repo.save_url_stats(url_stats=url_stats)
+    else:
+        url_stats.increase_access_count()
+        url_stats: UrlStats = url_stats_repo.update_url_stats(url_stats=url_stats)
+
     # TODO: 빠른 응답을 위한 redis 캐시
 
     # 응답 location 헤더에 반환
