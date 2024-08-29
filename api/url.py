@@ -33,9 +33,7 @@ def get_original_url_handler(
     if not url or url.is_active is False:
         raise HTTPException(status_code=404, detail="URL Not Found")
 
-    url_stats: UrlStats | None = url_stats_repo.get_today_url_stats(
-        date=date.today(), url_id=url.id
-    )
+    url_stats: UrlStats | None = url_stats_repo.get_today_url_stats(url_id=url.id)
 
     if url_stats is None:
         url_stats: UrlStats = UrlStats.create(

@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -33,7 +34,14 @@ class UrlStatsRepository:
     def __init__(self, session: Session = Depends(get_db)):
         self.session = session
 
-    def get_today_url_stats(self, date: str, url_id: int) -> UrlStats | None:
+    def get_today_url_stats(self, url_id: int) -> UrlStats | None:
+        return self.session.scalar(
+            select(UrlStats).where(
+                UrlStats.date == date.today(), UrlStats.url_id == url_id
+            )
+        )
+
+    def get_url_stats_of_specific_day(self, date: date, url_id: int) -> UrlStats | None:
         return self.session.scalar(
             select(UrlStats).where(UrlStats.date == date, UrlStats.url_id == url_id)
         )

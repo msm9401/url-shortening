@@ -10,3 +10,12 @@ class UrlSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UrlStatsSchema(BaseModel):
+    date: date
+    access_count: int
+    url_id = int
+
+    class Config:
+        orm_mode = True
