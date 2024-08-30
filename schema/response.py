@@ -1,4 +1,6 @@
 from datetime import date
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -13,9 +15,14 @@ class UrlSchema(BaseModel):
 
 
 class UrlStatsSchema(BaseModel):
-    date: date
+    id: int
+    date: date | None
     access_count: int
-    url_id = int
 
     class Config:
         orm_mode = True
+
+
+class UrlStatsListSchema(BaseModel):
+    stats: List[UrlStatsSchema]
+    total_view: int

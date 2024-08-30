@@ -9,7 +9,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
 
 
@@ -27,6 +27,8 @@ class Url(Base):
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+    stats = relationship("UrlStats", lazy="joined")
 
     @classmethod
     def create(
